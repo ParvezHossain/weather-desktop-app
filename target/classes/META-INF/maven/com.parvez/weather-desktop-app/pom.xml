@@ -1,0 +1,212 @@
+<!--
+========================================================
+Weather Desktop Application (Java 21 + JavaFX + Maven)
+Author: Parvez Hossain
+
+Purpose:
+This pom.xml configures a JavaFX desktop application
+that fetches weather data from an API.
+
+Key technologies:
+- Java 21
+- JavaFX UI framework
+- Jackson JSON parser
+- Maven build system
+
+Important:
+JavaFX is NOT bundled with JDK after Java 11,
+so we must explicitly include JavaFX dependencies
+and configure the JavaFX Maven plugin.
+========================================================
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<!-- Maven project model version -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Project coordinates -->
+	<groupId>com.parvez</groupId>
+	<artifactId>weather-desktop-app</artifactId>
+	<version>1.0</version>
+
+	<!--
+    ========================================================
+    Project properties
+    ========================================================
+    Central place to control versions
+    -->
+	<properties>
+
+		<!-- Java version used for compilation -->
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+
+		<!-- JavaFX version -->
+		<javafx.version>21.0.2</javafx.version>
+
+	</properties>
+
+	<!--
+    ========================================================
+    Dependencies
+    ========================================================
+    Libraries required by the application
+    -->
+	<dependencies>
+
+		<!--
+        JavaFX Controls
+        Provides UI components such as:
+        Button, Label, ComboBox, TextField, etc.
+        -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<!--
+        JavaFX FXML
+        Used if you want to design UI using FXML files
+        (optional but good practice for larger apps)
+        -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-fxml</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<!--
+        Jackson JSON Library
+        Used to parse weather API responses
+        -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.17.0</version>
+		</dependency>
+
+
+		<!-- .env -->
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>java-dotenv</artifactId>
+			<version>5.2.2</version>
+		</dependency>
+
+	</dependencies>
+
+	<!--
+    ========================================================
+    Build Configuration
+    ========================================================
+    Maven plugins used during build
+    -->
+	<build>
+		<plugins>
+
+			<!-- Maven Compiler Plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+				</configuration>
+			</plugin>
+
+
+			<!-- Maven Shade Plugin for fat JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.4.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<!-- Include JavaFX dependencies in the fat JAR -->
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<!-- Exclude module-info.class to avoid
+										conflicts -->
+										<exclude>module-info.class</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>weather.WeatherApp</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.panteleyev</groupId>
+				<artifactId>jpackage-maven-plugin</artifactId>
+				<version>1.6.0</version>
+
+				<configuration>
+
+					<!-- Application name -->
+					<name>WeatherApp</name>
+
+					<!-- Where the built jar is located -->
+					<input>${project.build.directory}</input>
+
+					<!-- Main jar -->
+					<mainJar>weather-desktop-app-1.0.jar</mainJar>
+
+					<!-- Main class -->
+					<mainClass>weather.WeatherApp</mainClass>
+
+					<!-- Output directory -->
+					<destination>${project.basedir}/dist</destination>
+
+					<!-- App version -->
+					<appVersion>1.0</appVersion>
+
+					<!-- Vendor -->
+					<vendor>Parvez Hossain</vendor>
+
+				</configuration>
+
+			</plugin>
+
+			<plugin>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-maven-plugin</artifactId>
+				<version>0.0.8</version>
+
+				<configuration>
+					<mainClass>weather.WeatherApp</mainClass>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>create-runtime</id>
+						<goals>
+							<goal>jlink</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>
